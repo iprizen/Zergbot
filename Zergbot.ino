@@ -33,6 +33,8 @@
 #define IND 5
 #define ENB 10
 #define DEFAULT_STICK_ZERO 128
+#define FRACTION 2
+#define DAMPING_RANGE 20
 #define DEBUGGING
 
 #include <Wire.h>
@@ -70,7 +72,7 @@ if( loop_cnt > 100 ) { // every 100 msecs get new data
   cbut = nunchuck_cbutton(); 
 
 robotOperation(joyx, joyy, accx, accy, accz, zbut, cbut);
-/*
+
 #ifdef DEBUGGING            
         Serial.print("joyx: "); Serial.print((byte)joyx,DEC);
         Serial.print("\tjoyy: "); Serial.print((byte)joyy,DEC);
@@ -80,7 +82,7 @@ robotOperation(joyx, joyy, accx, accy, accz, zbut, cbut);
         Serial.print("\tzbut: "); Serial.print((byte)zbut,DEC);
         Serial.print("\tcbut: "); Serial.println((byte)cbut,DEC);
 #endif
-*/
+
             }
     loop_cnt++;
     delay(1);

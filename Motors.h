@@ -43,26 +43,6 @@ pinMode(ENB,OUTPUT);
  * it will return the absolute speed value between 1 - 255 and the direction (1 - forward or right, -1 - backward or left, 0 - stop)
  * Return the speed between 1 and 255
 */ 
-struct vectorMove setMoveMotor(int newSpeed){
-  short newDirection = 0;
-  struct vectorMove newVector ;
-  
-  if (newSpeed > DEFAULT_STICK_ZERO){
-    newVector.Speed = newSpeed - DEFAULT_STICK_ZERO;
-    newVector.Direction = 1;
-  }
-  else if (newSpeed < DEFAULT_STICK_ZERO){
-    newVector.Speed = DEFAULT_STICK_ZERO - newSpeed;
-    newVector.Direction = -1;
-  }
-  else if (newSpeed == DEFAULT_STICK_ZERO){
-    newVector.Speed = newSpeed;
-    newVector.Direction = 0;
-  }
-  else newVector.Speed = -1;
-    
-    return newVector;
-}
 
 /*
  * sends the robot forwards
@@ -144,6 +124,36 @@ void Stop(){
 #endif  
 } 
 
+struct vectorMove setMoveMotor(int newSpeed){
+  short newDirection = 0;
+  struct vectorMove newVector ;
+  
+  if (newSpeed > DEFAULT_STICK_ZERO){
+      if(newSpeed < 255 * (DAMPING_RANGE/100))
+        newVector.Speed = 1/(255 * (DAMPING_RANGE/100)) * ((newSpeed - DEFAULT_STICK_ZERO) * (newSpeed - DEFAULT_STICK_ZERO));
+      else newVector.Speed = FRACTION * (newSpeed - DEFAULT_STICK_ZERO);
+    newVector.Direction = 1;
+  }
+  else if (newSpeed < DEFAULT_STICK_ZERO){
+    if(newSpeed < 255 * (DAMPING_RANGE/100))
+        newVector.Speed = 1/(255 * (DAMPING_RANGE/100)) * ((newSpeed - DEFAULT_STICK_ZERO) * (newSpeed - DEFAULT_STICK_ZERO));
+      else newVector.Speed = FRACTION * (DEFAULT_STICK_ZERO - newSpeed) ;
+    newVector.Direction = -1;
+  }
+  else if (newSpeed == DEFAULT_STICK_ZERO){
+    newVector.Speed = newSpeed;
+    newVector.Direction = 0;
+  }
+  else newVector.Speed = -1;
+
+    
+#ifdef DEBUGGING
+  Serial.print(millis());
+  Serial.print(" : current newSpeed - "); Serial.println(newVector.Speed, DEC);
+#endif
+
+    return newVector;
+}
 
 void moveDifferential(byte value_x, byte value_y){
   struct vectorMove tempMove;
