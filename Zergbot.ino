@@ -35,6 +35,9 @@
 #define DEFAULT_STICK_ZERO 128
 #define FRACTION 2
 #define DAMPING_RANGE 20
+
+#define ULTRASONIC_PORT 7
+
 #define DEBUGGING
 
 #include <Wire.h>

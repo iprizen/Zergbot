@@ -108,6 +108,31 @@ void moveLeft(int newSpeed){
 }
 
 /*
+ * move the robot round
+ */
+void moveRound(int newSpeed, short Direction){
+  if(Direction == 1){
+    analogWrite(ENA, newSpeed);
+    digitalWrite(INA, LOW);
+    digitalWrite(INB, HIGH);
+    analogWrite(ENB, newSpeed);
+    digitalWrite(INC, HIGH);
+    digitalWrite(IND, LOW);
+  } else if(Direction == -1){
+    analogWrite(ENA, newSpeed);
+    digitalWrite(INA, HIGH);
+    digitalWrite(INB, LOW);
+    analogWrite(ENB, newSpeed);
+    digitalWrite(INC, LOW);
+    digitalWrite(IND, HIGH);
+  }
+#ifdef DEBUGGING
+  Serial.print(millis());
+  Serial.println(" : : Move Round - "); Serial.println(newSpeed, DEC);
+#endif  
+}
+
+/*
  * stops the robot
  */
 void Stop(){
@@ -144,7 +169,7 @@ struct vectorMove setMoveMotor(int newSpeed){
     newVector.Speed = newSpeed;
     newVector.Direction = 0;
   }
-  else newVector.Speed = -1;
+  else newVector.Speed = 0;
 
     
 #ifdef DEBUGGING
@@ -155,25 +180,33 @@ struct vectorMove setMoveMotor(int newSpeed){
     return newVector;
 }
 
-void moveDifferential(byte value_x, byte value_y){
-  struct vectorMove tempMove;
+void moveDifferential(byte value_x, byte value_y, byte but){
+  struct vectorMove tempMoveX, tempMoveY;
 
-  tempMove = setMoveMotor(value_y);
+  tempMoveY = setMoveMotor(value_y);
+  tempMoveX = setMoveMotor(value_x);
 
-  if (tempMove.Direction == 1){
-    moveForward(tempMove.Speed);
-  } 
-  else if (tempMove.Direction == -1){
-    moveBackward(tempMove.Speed);
+  if(but == 1){
+      #ifdef DEBUGGING
+      Serial.print(millis());
+      Serial.println("Button Pressed");
+    #endif
+    moveRound(tempMoveY.Speed, tempMoveY.Direction);
+    return;
   }
   
-  tempMove = setMoveMotor(value_x);
-
-  if (tempMove.Direction == 1){
-    moveRight(tempMove.Speed);
+  if (tempMoveY.Direction == 1){
+    moveForward(tempMoveY.Speed);
+  } 
+  else if (tempMoveY.Direction == -1){
+    moveBackward(tempMoveY.Speed);
   }
-  else if (tempMove.Direction == -1){
-    moveLeft(tempMove.Speed);
+   
+  if (tempMoveX.Direction == 1){
+    moveRight(tempMoveX.Speed);
+  }
+  else if (tempMoveX.Direction == -1){
+    moveLeft(tempMoveX.Speed);
   }
 
  if (value_x == DEFAULT_STICK_ZERO && value_y == DEFAULT_STICK_ZERO){
@@ -183,13 +216,20 @@ void moveDifferential(byte value_x, byte value_y){
 }
 
 void robotOperation(byte joyx,byte joyy,byte accx,byte accy,byte accz, byte zbut,byte cbut){
-  if (!cbut){
+
+  if (zbut == 1)
+  {
+  moveDifferential(joyx, joyy, zbut);
+  return;
+   }
+
+  if (cbut==0){
     #ifdef DEBUGGING
       Serial.print(millis());
       Serial.println("robotOperation joystick called");
     #endif
     
-    moveDifferential(joyx, joyy);
+    moveDifferential(joyx, joyy, 0);
   }
   else
   {
@@ -198,7 +238,7 @@ void robotOperation(byte joyx,byte joyy,byte accx,byte accy,byte accz, byte zbut
       Serial.println("robotOperation accellerometer called");
     #endif
     
-    moveDifferential(accx, accy);
+    moveDifferential(accx, accy, 0);
   }
 }
 
